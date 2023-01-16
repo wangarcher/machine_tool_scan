@@ -1,0 +1,19 @@
+machine_tool:
+  # Publish all joint states -----------------------------------
+  joint_state_controller:
+    type: joint_state_controller/JointStateController
+    publish_rate: 50  
+
+  # Position Controllers ---------------------------------------
+  x_joint_velocity_controller:
+    type: velocity_controllers/JointVelocityController
+    joint: x_joint
+    pid: {p: 100.0, i: 0.01, d: 10.0}
+  y_joint_velocity_controller:
+    type: velocity_controllers/JointVelocityController
+    joint: y_joint
+    pid: {p: 100.0, i: 0.01, d: 10.0}
+  r_joint_velocity_controller:
+    type: velocity_controllers/JointVelocityController
+    joint: r_joint
+    pid: {p: 100.0, i: 0.01, d: 10.0}

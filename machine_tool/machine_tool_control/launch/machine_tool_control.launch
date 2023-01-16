@@ -1,0 +1,18 @@
+<launch>
+
+  <!-- Load joint controller configurations from YAML file to parameter server -->
+  <rosparam file="$(find machine_tool_control)/config/machine_tool_control.yaml" command="load"/>
+
+  <!-- load the controllers -->
+  <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+    output="screen" ns="/machine_tool" args="joint_state_controller 
+                                             x_joint_velocity_controller 
+                                             y_joint_velocity_controller 
+                                             r_joint_velocity_controller"/>
+
+  <!-- convert joint states to TF transforms for rviz, etc -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">
+    <remap from="/joint_states" to="/machine_tool/joint_states" />
+  </node>
+
+</launch>
