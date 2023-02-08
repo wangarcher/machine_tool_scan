@@ -210,3 +210,5 @@ include_directories(
 # catkin_add_nosetests(test)
 add_executable(machine_tool_scan src/machine_tool_scan.cpp)
 target_link_libraries(machine_tool_scan ${catkin_LIBRARIES})
+add_executable(machine_tool_scan4sim src/machine_tool_scan4sim.cpp)
+target_link_libraries(machine_tool_scan4sim ${catkin_LIBRARIES})
