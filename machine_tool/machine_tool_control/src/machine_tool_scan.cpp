@@ -148,13 +148,13 @@ public:
             //      << "y_joint_velocity_msgs: " << y_joint_velocity_msgs.data << "\n"
             //      << "r_joint_velocity_msgs: " << r_joint_velocity_msgs.data << "\n"
             //      << endl;
-            if (last_timing != timing)
+            if (1)
             {
-                something_great_in << "timing: " << timing << "\t"
-                                   << "x: " << x_joint_velocity_msgs.data << "\t"
-                                   << "y: " << y_joint_velocity_msgs.data << "\t"
-                                   << "r: " << r_joint_velocity_msgs.data << "\t"
-                                   << "\n";
+                // something_great_in << "timing: " << timing << "\t"
+                //                    << "x: " << x_joint_velocity_msgs.data << "\t"
+                //                    << "y: " << y_joint_velocity_msgs.data << "\t"
+                //                    << "r: " << r_joint_velocity_msgs.data << "\t"
+                //                    << "\n";
                 x_joint_pub_.publish(x_joint_velocity_msgs);
                 y_joint_pub_.publish(y_joint_velocity_msgs);
                 r_joint_pub_.publish(r_joint_velocity_msgs);
@@ -192,7 +192,7 @@ int main(int argc, char **argv)
     scan.a_side_length = 0.118;
     scan.b_side_length = 0.042;
     scan.corner_radius = 0.015;
-    scan.scan_velocity = 0.02;
+    scan.scan_velocity = 0.01;
     scan.run();
 
     ros::waitForShutdown();

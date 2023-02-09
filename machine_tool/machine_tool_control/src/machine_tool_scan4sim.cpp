@@ -25,6 +25,7 @@ public:
         // the velocity commands for these three joints
         x_joint_pub_ = n_.advertise<std_msgs::Float64>("/x_joint_velocity_controller/command", 1000);
         y_joint_pub_ = n_.advertise<std_msgs::Float64>("/y_joint_velocity_controller/command", 1000);
+        z_joint_pub_ = n_.advertise<std_msgs::Float64>("/z_joint_velocity_controller/command", 1000);
         r_joint_pub_ = n_.advertise<std_msgs::Float64>("/r_joint_velocity_controller/command", 1000);
         // Topic you want to subscribe
         // sub_ = n_.subscribe("/desired_velocity", 1, &Scan::callback, this);
@@ -38,21 +39,20 @@ public:
     // }
     void run()
     {
-        ofstream something_great_in;
-        something_great_in.open("v.txt", std::ios::trunc);
         std_msgs::Float64 x_joint_velocity_msgs;
         std_msgs::Float64 y_joint_velocity_msgs;
+        std_msgs::Float64 z_joint_velocity_msgs;
         std_msgs::Float64 r_joint_velocity_msgs;
         x_joint_velocity_msgs.data = 0.0;
         y_joint_velocity_msgs.data = 0.0;
+        z_joint_velocity_msgs.data = 0.0;
         r_joint_velocity_msgs.data = 0.0;
-        double theta = 0.0;
         double bias;
         double current_time;
         double timing;
         double last_timing;
 
-        while (timing <= 20.712 && n_.ok())
+        while (n_.ok())
         {
             if (init_flag || bias < 0.001)
             {
@@ -61,76 +61,28 @@ public:
             }
             current_time = ros::Time::now().toSec();
             timing = current_time - bias;
-            if (0 < timing && timing <= 2.95)
-            {
-                y_joint_velocity_msgs.data = set_velocity;
-            }
-            if (2.95 < timing && timing <= 4.128)
-            {
-                theta = (timing - 2.95) * 1.33344;
-                x_joint_velocity_msgs.data = 0.06263 * cos(theta + 0.3419) * 1.33344;
-                y_joint_velocity_msgs.data = 0.06263 * sin(theta + 0.3419) * 1.33344;
-                r_joint_velocity_msgs.data = 1.33344;
-            }
-            if (4.128 < timing && timing <= 6.228)
-            {
-                x_joint_velocity_msgs.data = 0.0;
-                y_joint_velocity_msgs.data = set_velocity;
-                r_joint_velocity_msgs.data = 0.0;
-            }
-            if (6.228 < timing && timing <= 7.406)
-            {
-                theta = (timing - 6.228) * 1.33344 + 1.5708;
-                x_joint_velocity_msgs.data = 0.06263 * cos(theta - 0.3419) * 1.33344;
-                y_joint_velocity_msgs.data = 0.06263 * sin(theta - 0.3419) * 1.33344;
-                r_joint_velocity_msgs.data = 1.33344;
-            }
-            if (7.406 < timing && timing <= 13.306)
-            {
-                x_joint_velocity_msgs.data = 0.0;
-                y_joint_velocity_msgs.data = set_velocity;
-                r_joint_velocity_msgs.data = 0.0;
-            }
-            if (13.306 < timing && timing <= 14.484)
-            {
-                theta = (timing - 13.306) * 1.33344;
-                x_joint_velocity_msgs.data = 0.06263 * cos(theta + 0.3419) * 1.33344;
-                y_joint_velocity_msgs.data = 0.06263 * sin(theta + 0.3419) * 1.33344;
-                r_joint_velocity_msgs.data = 1.33344;
-            }
-            if (14.484 < timing && timing <= 16.584)
-            {
-                x_joint_velocity_msgs.data = 0.0;
-                y_joint_velocity_msgs.data = set_velocity;
-                r_joint_velocity_msgs.data = 0.0;
-            }
-            if (16.584 < timing && timing <= 17.762)
-            {
-                theta = (timing - 16.584) * 1.33344 + 1.5708;
-                x_joint_velocity_msgs.data = 0.06263 * cos(theta - 0.3419) * 1.33344;
-                y_joint_velocity_msgs.data = 0.06263 * sin(theta - 0.3419) * 1.33344;
-                r_joint_velocity_msgs.data = 1.33344;
-            }
-            if (17.762 < timing && timing <= 20.712)
-            {
-                x_joint_velocity_msgs.data = 0.0;
-                y_joint_velocity_msgs.data = set_velocity;
-                r_joint_velocity_msgs.data = 0.0;
-            }
-            // cout << "bias: " << bias << ", current_time: " << current_time << ", timing: " << timing << endl;
-            // cout << "x_joint_velocity_msgs: " << x_joint_velocity_msgs.data << "\n"
-            //      << "y_joint_velocity_msgs: " << y_joint_velocity_msgs.data << "\n"
-            //      << "r_joint_velocity_msgs: " << r_joint_velocity_msgs.data << "\n"
-            //      << endl;
+
+            x_joint_velocity_msgs.data = 0.1;
+            y_joint_velocity_msgs.data = 0.1;
+            r_joint_velocity_msgs.data = 1;
+            z_joint_velocity_msgs.data = 10 * cos(30 * timing);
+
+            cout << "bias: " << bias << ", current_time: " << current_time << ", timing: " << timing << endl;
+            cout << "x_joint_velocity_msgs: " << x_joint_velocity_msgs.data << "\n"
+                 << "y_joint_velocity_msgs: " << y_joint_velocity_msgs.data << "\n"
+                 << "z_joint_velocity_msgs: " << z_joint_velocity_msgs.data << "\n"
+                 << "r_joint_velocity_msgs: " << r_joint_velocity_msgs.data << "\n"
+                 << endl;
             if (last_timing != timing)
             {
-                something_great_in << "timing: " << timing << "\t"
-                                   << "x: " << x_joint_velocity_msgs.data << "\t"
-                                   << "y: " << y_joint_velocity_msgs.data << "\t"
-                                   << "r: " << r_joint_velocity_msgs.data << "\t"
-                                   << "\n";
+                // something_great_in << "timing: " << timing << "\t"
+                //                    << "x: " << x_joint_velocity_msgs.data << "\t"
+                //                    << "y: " << y_joint_velocity_msgs.data << "\t"
+                //                    << "r: " << r_joint_velocity_msgs.data << "\t"
+                //                    << "\n";
                 x_joint_pub_.publish(x_joint_velocity_msgs);
                 y_joint_pub_.publish(y_joint_velocity_msgs);
+                z_joint_pub_.publish(z_joint_velocity_msgs);
                 r_joint_pub_.publish(r_joint_velocity_msgs);
                 last_timing = timing;
             }
@@ -139,9 +91,11 @@ public:
 
         x_joint_velocity_msgs.data = 0.0;
         y_joint_velocity_msgs.data = 0.0;
+        z_joint_velocity_msgs.data = 0.0;
         r_joint_velocity_msgs.data = 0.0;
         x_joint_pub_.publish(x_joint_velocity_msgs);
         y_joint_pub_.publish(y_joint_velocity_msgs);
+        z_joint_pub_.publish(z_joint_velocity_msgs);
         r_joint_pub_.publish(r_joint_velocity_msgs);
     }
 
@@ -149,6 +103,7 @@ private:
     ros::NodeHandle n_;
     ros::Publisher x_joint_pub_;
     ros::Publisher y_joint_pub_;
+    ros::Publisher z_joint_pub_;
     ros::Publisher r_joint_pub_;
     // ros::Subscriber sub_;
 

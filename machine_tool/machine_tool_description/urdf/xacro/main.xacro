@@ -191,7 +191,7 @@
 
 
     <joint name="plate_joine" type="fixed">
-        <origin xyz="0 0 0" rpy="0 0 0"></origin>
+        <origin xyz="-0.0358 0.07353 0" rpy="1.5707963 0 0"></origin>
         <parent link="plate" />
         <child link="iphone"/>
         <axis xyz="0 0 1" />

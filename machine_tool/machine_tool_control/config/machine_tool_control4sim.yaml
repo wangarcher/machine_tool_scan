@@ -13,6 +13,10 @@
     type: velocity_controllers/JointVelocityController
     joint: y_joint
     pid: {p: 100.0, i: 0.01, d: 10.0}
+  z_joint_velocity_controller:
+    type: velocity_controllers/JointVelocityController
+    joint: z_joint
+    pid: {p: 100.0, i: 0.01, d: 10.0}
   r_joint_velocity_controller:
     type: velocity_controllers/JointVelocityController
     joint: r_joint
