@@ -62,10 +62,10 @@ public:
             current_time = ros::Time::now().toSec();
             timing = current_time - bias;
 
-            x_joint_velocity_msgs.data = 0.1;
-            y_joint_velocity_msgs.data = 0.1;
-            r_joint_velocity_msgs.data = 1;
-            z_joint_velocity_msgs.data = 10 * cos(30 * timing);
+            x_joint_velocity_msgs.data = 0;
+            y_joint_velocity_msgs.data = 0;
+            r_joint_velocity_msgs.data = 0.77 * cos(timing);
+            z_joint_velocity_msgs.data = 0.77 * cos(30 * timing);
 
             cout << "bias: " << bias << ", current_time: " << current_time << ", timing: " << timing << endl;
             cout << "x_joint_velocity_msgs: " << x_joint_velocity_msgs.data << "\n"
@@ -105,6 +105,8 @@ private:
     ros::Publisher y_joint_pub_;
     ros::Publisher z_joint_pub_;
     ros::Publisher r_joint_pub_;
+
+    ros::Publisher base_real_state_;
     // ros::Subscriber sub_;
 
 }; // End of class SubscribeAndPublish
