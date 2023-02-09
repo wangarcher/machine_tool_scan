@@ -11,14 +11,19 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <fstream>
-using namespace std;
+#include <math.h>
 
-double set_velocity = -0.02; // 20mm/s
-double set_time = 20.712;    // with the total length of 414.24mm
+using namespace std;
 bool init_flag = true;
 
 class Scan
 {
+public:
+    double scan_velocity;
+    double a_side_length;
+    double b_side_length;
+    double corner_radius;
+
 public:
     Scan()
     {
@@ -52,7 +57,28 @@ public:
         double timing;
         double last_timing;
 
-        while (timing <= 20.712 && n_.ok())
+        double corner_length = M_PI / 2 * corner_radius;
+
+        double a_side_time = a_side_length / scan_velocity;
+        double b_side_time = b_side_length / scan_velocity;
+        double corner_time = corner_length / scan_velocity;
+        double corner_angular_vel = M_PI / 2 / corner_time;
+
+        double corner2center_tan = std::atan2(b_side_length, a_side_length);
+        double corner2center_dis = std::sqrt(a_side_length * a_side_length / 4 + b_side_length * b_side_length / 4);
+        double total_length = 2 * (2 * corner_length + a_side_length + b_side_length);
+        double total_time = total_length / scan_velocity;
+        double phase_timing[] = {a_side_time / 2,
+                                 a_side_time / 2 + corner_time,
+                                 a_side_time / 2 + corner_time + b_side_time,
+                                 a_side_time / 2 + 2 * corner_time + b_side_time,
+                                 3 * a_side_time / 2 + 2 * corner_time + b_side_time,
+                                 3 * a_side_time / 2 + 3 * corner_time + b_side_time,
+                                 3 * a_side_time / 2 + 3 * corner_time + 2 * b_side_time,
+                                 3 * a_side_time / 2 + 4 * corner_time + 2 * b_side_time,
+                                 total_time};
+
+        while (timing <= total_time && n_.ok())
         {
             if (init_flag || bias < 0.001)
             {
@@ -61,60 +87,60 @@ public:
             }
             current_time = ros::Time::now().toSec();
             timing = current_time - bias;
-            if (0 < timing && timing <= 2.95)
+            if (0 < timing && timing <= phase_timing[0])
             {
-                y_joint_velocity_msgs.data = set_velocity;
+                y_joint_velocity_msgs.data = -scan_velocity;
             }
-            if (2.95 < timing && timing <= 4.128)
+            if (phase_timing[0] < timing && timing <= phase_timing[1])
             {
-                theta = (timing - 2.95) * 1.33344;
-                x_joint_velocity_msgs.data = 0.06263 * cos(theta + 0.3419) * 1.33344;
-                y_joint_velocity_msgs.data = 0.06263 * sin(theta + 0.3419) * 1.33344;
-                r_joint_velocity_msgs.data = 1.33344;
+                theta = (timing - phase_timing[0]) * corner_angular_vel;
+                x_joint_velocity_msgs.data = corner2center_dis * cos(theta + corner2center_tan) * corner_angular_vel;
+                y_joint_velocity_msgs.data = corner2center_dis * sin(theta + corner2center_tan) * corner_angular_vel;
+                r_joint_velocity_msgs.data = corner_angular_vel;
             }
-            if (4.128 < timing && timing <= 6.228)
+            if (phase_timing[1] < timing && timing <= phase_timing[2])
             {
                 x_joint_velocity_msgs.data = 0.0;
-                y_joint_velocity_msgs.data = set_velocity;
+                y_joint_velocity_msgs.data = -scan_velocity;
                 r_joint_velocity_msgs.data = 0.0;
             }
-            if (6.228 < timing && timing <= 7.406)
+            if (phase_timing[2] < timing && timing <= phase_timing[3])
             {
-                theta = (timing - 6.228) * 1.33344 + 1.5708;
-                x_joint_velocity_msgs.data = 0.06263 * cos(theta - 0.3419) * 1.33344;
-                y_joint_velocity_msgs.data = 0.06263 * sin(theta - 0.3419) * 1.33344;
-                r_joint_velocity_msgs.data = 1.33344;
+                theta = (timing - phase_timing[2]) * corner_angular_vel + M_PI / 2;
+                x_joint_velocity_msgs.data = corner2center_dis * cos(theta - corner2center_tan) * corner_angular_vel;
+                y_joint_velocity_msgs.data = corner2center_dis * sin(theta - corner2center_tan) * corner_angular_vel;
+                r_joint_velocity_msgs.data = corner_angular_vel;
             }
-            if (7.406 < timing && timing <= 13.306)
+            if (phase_timing[3] < timing && timing <= phase_timing[4])
             {
                 x_joint_velocity_msgs.data = 0.0;
-                y_joint_velocity_msgs.data = set_velocity;
+                y_joint_velocity_msgs.data = -scan_velocity;
                 r_joint_velocity_msgs.data = 0.0;
             }
-            if (13.306 < timing && timing <= 14.484)
+            if (phase_timing[4] < timing && timing <= phase_timing[5])
             {
-                theta = (timing - 13.306) * 1.33344;
-                x_joint_velocity_msgs.data = 0.06263 * cos(theta + 0.3419) * 1.33344;
-                y_joint_velocity_msgs.data = 0.06263 * sin(theta + 0.3419) * 1.33344;
-                r_joint_velocity_msgs.data = 1.33344;
+                theta = (timing - phase_timing[4]) * corner_angular_vel;
+                x_joint_velocity_msgs.data = corner2center_dis * cos(theta + corner2center_tan) * corner_angular_vel;
+                y_joint_velocity_msgs.data = corner2center_dis * sin(theta + corner2center_tan) * corner_angular_vel;
+                r_joint_velocity_msgs.data = corner_angular_vel;
             }
-            if (14.484 < timing && timing <= 16.584)
+            if (phase_timing[5] < timing && timing <= phase_timing[6])
             {
                 x_joint_velocity_msgs.data = 0.0;
-                y_joint_velocity_msgs.data = set_velocity;
+                y_joint_velocity_msgs.data = -scan_velocity;
                 r_joint_velocity_msgs.data = 0.0;
             }
-            if (16.584 < timing && timing <= 17.762)
+            if (phase_timing[6] < timing && timing <= phase_timing[7])
             {
-                theta = (timing - 16.584) * 1.33344 + 1.5708;
-                x_joint_velocity_msgs.data = 0.06263 * cos(theta - 0.3419) * 1.33344;
-                y_joint_velocity_msgs.data = 0.06263 * sin(theta - 0.3419) * 1.33344;
-                r_joint_velocity_msgs.data = 1.33344;
+                theta = (timing - phase_timing[6]) * corner_angular_vel + M_PI / 2;
+                x_joint_velocity_msgs.data = corner2center_dis * cos(theta - corner2center_tan) * corner_angular_vel;
+                y_joint_velocity_msgs.data = corner2center_dis * sin(theta - corner2center_tan) * corner_angular_vel;
+                r_joint_velocity_msgs.data = corner_angular_vel;
             }
-            if (17.762 < timing && timing <= 20.712)
+            if (phase_timing[7] < timing && timing <= total_time)
             {
                 x_joint_velocity_msgs.data = 0.0;
-                y_joint_velocity_msgs.data = set_velocity;
+                y_joint_velocity_msgs.data = -scan_velocity;
                 r_joint_velocity_msgs.data = 0.0;
             }
             // cout << "bias: " << bias << ", current_time: " << current_time << ", timing: " << timing << endl;
@@ -163,7 +189,10 @@ int main(int argc, char **argv)
 
     ros::AsyncSpinner spinner(7);
     spinner.start();
-
+    scan.a_side_length = 0.118;
+    scan.b_side_length = 0.042;
+    scan.corner_radius = 0.015;
+    scan.scan_velocity = 0.02;
     scan.run();
 
     ros::waitForShutdown();

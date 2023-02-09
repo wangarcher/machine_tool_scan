@@ -169,7 +169,7 @@
     <link name="iphone">
       <visual>
         <geometry>
-          <mesh filename="package://machine_tool_description/meshes/iphone/iPhone.stl" scale = "0.001 0.001 0.001" />
+          <mesh filename="package://machine_tool_description/meshes/iphone/test_model.STL" scale = "0.001 0.001 0.001" />
         </geometry>
         <material name="LightGrey">
           <color rgba="0.75294 0.75294 0.75294 1" />
@@ -191,7 +191,7 @@
 
 
     <joint name="plate_joine" type="fixed">
-        <origin xyz="0 0 0.03" rpy="0 0 0"></origin>
+        <origin xyz="0 0 0" rpy="0 0 0"></origin>
         <parent link="plate" />
         <child link="iphone"/>
         <axis xyz="0 0 1" />
