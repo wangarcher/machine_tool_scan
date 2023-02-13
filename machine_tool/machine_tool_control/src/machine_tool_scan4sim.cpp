@@ -23,12 +23,13 @@ public:
     Scan()
     {
         // the velocity commands for these three joints
-        x_joint_pub_ = n_.advertise<std_msgs::Float64>("/x_joint_velocity_controller/command", 1000);
-        y_joint_pub_ = n_.advertise<std_msgs::Float64>("/y_joint_velocity_controller/command", 1000);
-        z_joint_pub_ = n_.advertise<std_msgs::Float64>("/z_joint_velocity_controller/command", 1000);
-        r_joint_pub_ = n_.advertise<std_msgs::Float64>("/r_joint_velocity_controller/command", 1000);
+        x_joint_pub_ = n_.advertise<std_msgs::Float64>("/x_joint_velocity_controller/command", 50);
+        y_joint_pub_ = n_.advertise<std_msgs::Float64>("/y_joint_velocity_controller/command", 50);
+        z_joint_pub_ = n_.advertise<std_msgs::Float64>("/z_joint_velocity_controller/command", 50);
+        r_joint_pub_ = n_.advertise<std_msgs::Float64>("/r_joint_velocity_controller/command", 50);
         // Topic you want to subscribe
         // sub_ = n_.subscribe("/desired_velocity", 1, &Scan::callback, this);
+        presuppose_model_pub_ = n_.advertise<geometry_msgs::Twist>("/presuppose", 50);
     }
 
     // void callback(const geometry_msgs::Twist &desried_vel)
@@ -43,6 +44,7 @@ public:
         std_msgs::Float64 y_joint_velocity_msgs;
         std_msgs::Float64 z_joint_velocity_msgs;
         std_msgs::Float64 r_joint_velocity_msgs;
+        geometry_msgs::Twist presuppose_msgs;
         x_joint_velocity_msgs.data = 0.0;
         y_joint_velocity_msgs.data = 0.0;
         z_joint_velocity_msgs.data = 0.0;
@@ -62,10 +64,12 @@ public:
             current_time = ros::Time::now().toSec();
             timing = current_time - bias;
 
-            x_joint_velocity_msgs.data = 0;
-            y_joint_velocity_msgs.data = 0;
-            r_joint_velocity_msgs.data = 0.77 * cos(timing);
-            z_joint_velocity_msgs.data = 0.77 * cos(30 * timing);
+            x_joint_velocity_msgs.data = 0; // 37 * sin(10 * timing);
+            y_joint_velocity_msgs.data = 0; // 37 * sin(10 * timing);
+            z_joint_velocity_msgs.data = 0.37 * sin(30 * timing);
+            presuppose_msgs.linear.z = 0.37 * sin(30 * timing);
+            // r_joint_velocity_msgs.data = 0.7 * sin(timing);
+            presuppose_msgs.angular.z = 0.7 * sin(timing); // -0.05);
 
             cout << "bias: " << bias << ", current_time: " << current_time << ", timing: " << timing << endl;
             cout << "x_joint_velocity_msgs: " << x_joint_velocity_msgs.data << "\n"
@@ -84,9 +88,10 @@ public:
                 y_joint_pub_.publish(y_joint_velocity_msgs);
                 z_joint_pub_.publish(z_joint_velocity_msgs);
                 r_joint_pub_.publish(r_joint_velocity_msgs);
+                presuppose_model_pub_.publish(presuppose_msgs);
                 last_timing = timing;
             }
-            sleep(0.001);
+            sleep(0.02);
         }
 
         x_joint_velocity_msgs.data = 0.0;
@@ -105,6 +110,7 @@ private:
     ros::Publisher y_joint_pub_;
     ros::Publisher z_joint_pub_;
     ros::Publisher r_joint_pub_;
+    ros::Publisher presuppose_model_pub_;
 
     ros::Publisher base_real_state_;
     // ros::Subscriber sub_;
