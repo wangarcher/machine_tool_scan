@@ -68,9 +68,7 @@ public:
             y_joint_velocity_msgs.data = 0; // 37 * sin(10 * timing);
             z_joint_velocity_msgs.data = 0.37 * sin(30 * timing);
             presuppose_msgs.linear.z = 0.37 * sin(30 * timing);
-            r_joint_velocity_msgs.data = 0.43 * sin(timing);
-            presuppose_msgs.angular.z = 0.43 * sin(timing - 0.055); // -0.05);
-
+            // r_joint_velocity_msgs.data = 0.43 * sin(timing);
             cout << "bias: " << bias << ", current_time: " << current_time << ", timing: " << timing << endl;
             cout << "x_joint_velocity_msgs: " << x_joint_velocity_msgs.data << "\n"
                  << "y_joint_velocity_msgs: " << y_joint_velocity_msgs.data << "\n"
