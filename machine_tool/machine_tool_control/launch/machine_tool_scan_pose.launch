@@ -1,0 +1,5 @@
+<launch>
+
+  <node name="machine_tool_scan_pose" pkg="machine_tool_control" type="machine_tool_scan_pose" output="screen" />
+
+</launch>

@@ -28,9 +28,9 @@ public:
     Scan()
     {
         // the velocity commands for these three joints
-        x_joint_pub_ = n_.advertise<std_msgs::Float64>("/machine_tool/x_joint_velocity_controller/command", 1000);
-        y_joint_pub_ = n_.advertise<std_msgs::Float64>("/machine_tool/y_joint_velocity_controller/command", 1000);
-        r_joint_pub_ = n_.advertise<std_msgs::Float64>("/machine_tool/r_joint_velocity_controller/command", 1000);
+        x_joint_pub_ = n_.advertise<std_msgs::Float64>("/machine_tool/x_joint_position_controller/command", 1000);
+        y_joint_pub_ = n_.advertise<std_msgs::Float64>("/machine_tool/y_joint_position_controller/command", 1000);
+        r_joint_pub_ = n_.advertise<std_msgs::Float64>("/machine_tool/r_joint_position_controller/command", 1000);
         // Topic you want to subscribe
         // sub_ = n_.subscribe("/desired_velocity", 1, &Scan::callback, this);
     }
@@ -45,12 +45,12 @@ public:
     {
         ofstream something_great_in;
         something_great_in.open("v.txt", std::ios::trunc);
-        std_msgs::Float64 x_joint_velocity_msgs;
-        std_msgs::Float64 y_joint_velocity_msgs;
-        std_msgs::Float64 r_joint_velocity_msgs;
-        x_joint_velocity_msgs.data = 0.0;
-        y_joint_velocity_msgs.data = 0.0;
-        r_joint_velocity_msgs.data = 0.0;
+        std_msgs::Float64 x_joint_position_msgs;
+        std_msgs::Float64 y_joint_position_msgs;
+        std_msgs::Float64 r_joint_position_msgs;
+        x_joint_position_msgs.data = 0.0;
+        y_joint_position_msgs.data = 0.0;
+        r_joint_position_msgs.data = 0.0;
         double theta = 0.0;
         double bias;
         double current_time;
@@ -78,7 +78,10 @@ public:
                                  3 * a_side_time / 2 + 4 * corner_time + 2 * b_side_time,
                                  total_time};
 
-        while (timing <= total_time + 0.05 && n_.ok())
+        // double x_pos = 0.0;
+        // double y_pos = 0.0;
+        // double r_pos = 0.0;
+        while (timing <= total_time && n_.ok())
         {
             if (init_flag || bias < 0.001)
             {
@@ -89,86 +92,88 @@ public:
             timing = current_time - bias;
             if (0 < timing && timing <= phase_timing[0])
             {
-                y_joint_velocity_msgs.data = -scan_velocity;
+                x_joint_position_msgs.data = 0.0;
+                y_joint_position_msgs.data = -scan_velocity * timing;
+                r_joint_position_msgs.data = 0.0;
             }
             if (phase_timing[0] < timing && timing <= phase_timing[1])
             {
                 theta = (timing - phase_timing[0]) * corner_angular_vel;
-                x_joint_velocity_msgs.data = corner2center_dis * cos(theta + corner2center_tan) * corner_angular_vel;
-                y_joint_velocity_msgs.data = corner2center_dis * sin(theta + corner2center_tan) * corner_angular_vel;
-                r_joint_velocity_msgs.data = corner_angular_vel;
+                x_joint_position_msgs.data = corner2center_dis * sin(theta + corner2center_tan) - b_side_length / 2;
+                y_joint_position_msgs.data = -corner2center_dis * cos(theta + corner2center_tan);
+                r_joint_position_msgs.data = theta;
             }
             if (phase_timing[1] < timing && timing <= phase_timing[2])
             {
-                x_joint_velocity_msgs.data = 0.0;
-                y_joint_velocity_msgs.data = -scan_velocity;
-                r_joint_velocity_msgs.data = 0.0;
+                x_joint_position_msgs.data = (a_side_length - b_side_length) / 2;
+                y_joint_position_msgs.data = -scan_velocity * (timing - phase_timing[1]) + b_side_length / 2;
+                r_joint_position_msgs.data = M_PI / 2;
             }
             if (phase_timing[2] < timing && timing <= phase_timing[3])
             {
                 theta = (timing - phase_timing[2]) * corner_angular_vel + M_PI / 2;
-                x_joint_velocity_msgs.data = corner2center_dis * cos(theta - corner2center_tan) * corner_angular_vel;
-                y_joint_velocity_msgs.data = corner2center_dis * sin(theta - corner2center_tan) * corner_angular_vel;
-                r_joint_velocity_msgs.data = corner_angular_vel;
+                x_joint_position_msgs.data = corner2center_dis * sin(theta - corner2center_tan) - b_side_length / 2;
+                y_joint_position_msgs.data = -corner2center_dis * cos(theta - corner2center_tan);
+                r_joint_position_msgs.data = theta;
             }
             if (phase_timing[3] < timing && timing <= phase_timing[4])
             {
-                x_joint_velocity_msgs.data = 0.0;
-                y_joint_velocity_msgs.data = -scan_velocity;
-                r_joint_velocity_msgs.data = 0.0;
+                x_joint_position_msgs.data = 0.0;
+                y_joint_position_msgs.data = -scan_velocity * (timing - phase_timing[3]) + a_side_length / 2;
+                r_joint_position_msgs.data = M_PI;
             }
             if (phase_timing[4] < timing && timing <= phase_timing[5])
             {
-                theta = (timing - phase_timing[4]) * corner_angular_vel;
-                x_joint_velocity_msgs.data = corner2center_dis * cos(theta + corner2center_tan) * corner_angular_vel;
-                y_joint_velocity_msgs.data = corner2center_dis * sin(theta + corner2center_tan) * corner_angular_vel;
-                r_joint_velocity_msgs.data = corner_angular_vel;
+                theta = (timing - phase_timing[4]) * corner_angular_vel + M_PI;
+                x_joint_position_msgs.data = -corner2center_dis * sin(theta + corner2center_tan) - b_side_length / 2;
+                y_joint_position_msgs.data = corner2center_dis * cos(theta + corner2center_tan);
+                r_joint_position_msgs.data = theta;
             }
             if (phase_timing[5] < timing && timing <= phase_timing[6])
             {
-                x_joint_velocity_msgs.data = 0.0;
-                y_joint_velocity_msgs.data = -scan_velocity;
-                r_joint_velocity_msgs.data = 0.0;
+                x_joint_position_msgs.data = (a_side_length - b_side_length) / 2;
+                y_joint_position_msgs.data = -scan_velocity * (timing - phase_timing[5]) + b_side_length / 2;
+                r_joint_position_msgs.data = 3 * M_PI / 2;
             }
             if (phase_timing[6] < timing && timing <= phase_timing[7])
             {
-                theta = (timing - phase_timing[6]) * corner_angular_vel + M_PI / 2;
-                x_joint_velocity_msgs.data = corner2center_dis * cos(theta - corner2center_tan) * corner_angular_vel;
-                y_joint_velocity_msgs.data = corner2center_dis * sin(theta - corner2center_tan) * corner_angular_vel;
-                r_joint_velocity_msgs.data = corner_angular_vel;
+                theta = (timing - phase_timing[6]) * corner_angular_vel + 3 * M_PI / 2;
+                x_joint_position_msgs.data = -corner2center_dis * sin(theta - corner2center_tan) - b_side_length / 2;
+                y_joint_position_msgs.data = corner2center_dis * cos(theta - corner2center_tan);
+                r_joint_position_msgs.data = theta;
             }
             if (phase_timing[7] < timing && timing <= total_time + 0.05)
             {
-                x_joint_velocity_msgs.data = 0.0;
-                y_joint_velocity_msgs.data = -scan_velocity;
-                r_joint_velocity_msgs.data = 0.0;
+                x_joint_position_msgs.data = 0.0;
+                y_joint_position_msgs.data = -scan_velocity * (timing - phase_timing[7]) + a_side_length / 2;
+                r_joint_position_msgs.data = 2 * M_PI;
             }
             // cout << "bias: " << bias << ", current_time: " << current_time << ", timing: " << timing << endl;
-            // cout << "x_joint_velocity_msgs: " << x_joint_velocity_msgs.data << "\n"
-            //      << "y_joint_velocity_msgs: " << y_joint_velocity_msgs.data << "\n"
-            //      << "r_joint_velocity_msgs: " << r_joint_velocity_msgs.data << "\n"
+            // cout << "x_joint_position_msgs: " << x_joint_position_msgs.data << "\n"
+            //      << "y_joint_position_msgs: " << y_joint_position_msgs.data << "\n"
+            //      << "r_joint_position_msgs: " << r_joint_position_msgs.data << "\n"
             //      << endl;
             if (1)
             {
                 // something_great_in << "timing: " << timing << "\t"
-                //                    << "x: " << x_joint_velocity_msgs.data << "\t"
-                //                    << "y: " << y_joint_velocity_msgs.data << "\t"
-                //                    << "r: " << r_joint_velocity_msgs.data << "\t"
+                //                    << "x: " << x_joint_position_msgs.data << "\t"
+                //                    << "y: " << y_joint_position_msgs.data << "\t"
+                //                    << "r: " << r_joint_position_msgs.data << "\t"
                 //                    << "\n";
-                x_joint_pub_.publish(x_joint_velocity_msgs);
-                y_joint_pub_.publish(y_joint_velocity_msgs);
-                r_joint_pub_.publish(r_joint_velocity_msgs);
+                x_joint_pub_.publish(x_joint_position_msgs);
+                y_joint_pub_.publish(y_joint_position_msgs);
+                r_joint_pub_.publish(r_joint_position_msgs);
                 last_timing = timing;
             }
             sleep(0.001);
         }
 
-        x_joint_velocity_msgs.data = 0.0;
-        y_joint_velocity_msgs.data = 0.0;
-        r_joint_velocity_msgs.data = 0.0;
-        x_joint_pub_.publish(x_joint_velocity_msgs);
-        y_joint_pub_.publish(y_joint_velocity_msgs);
-        r_joint_pub_.publish(r_joint_velocity_msgs);
+        // x_joint_position_msgs.data = 0.0;
+        // y_joint_position_msgs.data = 0.0;
+        // r_joint_position_msgs.data = 0.0;
+        x_joint_pub_.publish(x_joint_position_msgs);
+        y_joint_pub_.publish(y_joint_position_msgs);
+        r_joint_pub_.publish(r_joint_position_msgs);
     }
 
 private:
